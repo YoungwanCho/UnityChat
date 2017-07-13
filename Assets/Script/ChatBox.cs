@@ -31,7 +31,7 @@ public class ChatBox : MonoBehaviour
             OnConnectToServer();
         }
 
-        GUI.TextArea(new Rect(10, 60, 540, 540), string.Empty);
+        _textHistroy = GUI.TextArea(new Rect(10, 60, 540, 540), _textHistroy);
 
         GUI.TextArea(new Rect(10, 610, 200, 40), "보낼 텍스트");
         _textMessage = GUI.TextField(new Rect(220, 610, 200, 40), _textMessage);
@@ -43,7 +43,7 @@ public class ChatBox : MonoBehaviour
         }
     }
 
-    public void OnConnectToServer()
+    private void OnConnectToServer()
     {
         if (_mainSock.Connected)
         {
@@ -75,18 +75,17 @@ public class ChatBox : MonoBehaviour
 
     private void OnSendData()
     {
-        if (!_mainSock.IsBound)
-        {
-            Debug.Log("서버가 실행되고 있지 않습니다.");
-            return;
-        }
+        //@TODO: 연결 되도 false를 리턴한다
+        //if (!_mainSock.IsBound)
+        //{
+        //    Debug.Log("서버가 실행되고 있지 않습니다.");
+        //    return;
+        //}
 
         if (string.IsNullOrEmpty(_textMessage))
         {
             Debug.Log("메세지가 입력 되지 않았습니다.");
             return;
-
-
         }
 
         IPEndPoint ip = (IPEndPoint)_mainSock.LocalEndPoint;
@@ -95,11 +94,12 @@ public class ChatBox : MonoBehaviour
         byte[] bDts = Encoding.UTF8.GetBytes(addr + "\x01" + _textMessage);
 
         _mainSock.Send(bDts);
-
+        AppendText(_textIpAddress, _textMessage);
         _textMessage = string.Empty;
+        
     }
 
-    public void DataReceived(System.IAsyncResult ar)
+    private void DataReceived(System.IAsyncResult ar)
     {
         MultiChatClient.AsyncObject obj = (MultiChatClient.AsyncObject) ar.AsyncState;
 
@@ -116,11 +116,17 @@ public class ChatBox : MonoBehaviour
         string[] tokens = text.Split('\x01');
         string ip = tokens[0];
         string msg = tokens[1];
-
+        AppendText(ip, msg);
         obj.ClearBuffer();
 
         obj.WorkingSocket.BeginReceive(obj.Buffer, 0, 4096, 0, DataReceived, obj);
+    }
 
+    private void AppendText(string ip, string message)
+    {
+        StringBuilder strBuild = new StringBuilder(_textHistroy);
+        strBuild.Append(string.Format("{0} : {1}{2}", ip, message, Environment.NewLine));
+        _textHistroy = strBuild.ToString();
     }
 
 }
