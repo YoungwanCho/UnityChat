@@ -19,6 +19,11 @@ public class ChatController : MonoBehaviour
         _view.Initialize(_model.OnConnectToServer, _model.OnSendData);
     }
 
+    public void Start()
+    {
+        TestPacket();
+    }
+
     public void ReceiveCallBack(byte[] buff)
     {
         SendUpdate(buff);
@@ -37,7 +42,31 @@ public class ChatController : MonoBehaviour
 
     private void TestPacket()
     {
-        Packet packet = new Packet(10, 100, 100);
+        PacketUserInfo sendPacket = new PacketUserInfo(1000, 1001);
+        sendPacket.InitPacketUserInfo();
+
+        Debug.Log(sendPacket.ToString());
+        byte[] buff = sendPacket.ToBytes();
+
+        //packet.ToBytes();
+        //Debug.Log(packet.GetSize());
+        //PrintByteArray(buff);
+
+        PacketUserInfo receivePacket = new PacketUserInfo(1000, 1001);
+        receivePacket.ToType(buff);
+
+        Debug.Log(receivePacket.ToString());
     }
+
+    private void PrintByteArray(byte[] buff)
+    {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < buff.Length; i++)
+        {
+            sb.Append(buff[i]);
+        }
+        Debug.Log(sb.ToString());
+    }
+
 
 }

@@ -62,6 +62,21 @@ namespace NetworkLibrary
             return buff;
         }
 
+        public void ToType(byte[] buff)
+        {
+            int offset = 0;
+            _sup = new PInteger(Util.ByteArrToInt(buff, offset));
+            _sub = new PInteger(Util.ByteArrToInt(buff, offset += 4));
+            int pointer = offset += 4;
+            if (_field != null)
+            {
+                for (int i = 0; i < _field.Length; i++)
+                {
+                    _field[i].ToType(buff, ref pointer);
+                }
+            }
+        }
+
         public int GetSize()
         {
             int result = 0;
@@ -75,6 +90,11 @@ namespace NetworkLibrary
             }
 
             return result;
+        }
+
+        public override string ToString()
+        {
+            return "";
         }
 
     }

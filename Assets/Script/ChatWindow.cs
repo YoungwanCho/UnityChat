@@ -45,9 +45,9 @@ public class ChatWindow : MonoBehaviour
 
     public void AppendText(string ip, string message)
     {
-        StringBuilder strBuild = new StringBuilder(_textHistroy);
-        strBuild.Append(string.Format("{0} : {1}{2}", ip, message, System.Environment.NewLine));
-        _textHistroy = strBuild.ToString();
+        StringBuilder sb = new StringBuilder(_textHistroy);
+        sb.Append(string.Format("{0} : {1}{2}", ip, message, System.Environment.NewLine));
+        _textHistroy = sb.ToString();
     }
 
 }

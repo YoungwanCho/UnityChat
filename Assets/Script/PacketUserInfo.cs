@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using NetworkLibrary;
 using NetworkLibrary.PacketType;
 
@@ -23,10 +24,10 @@ public class PacketUserInfo : Packet
 
         _field[2] = pbyte;
         _field[3] = psbyte;
-        _field[4] = pinteger;
-        _field[5] = puinteger;
-        _field[6] = pfloat;
-        _field[7] = plong;
+        _field[4] = pshort;
+        _field[5] = pinteger;
+        _field[6] = puinteger;
+        _field[7] = pfloat;
         _field[8] = plong;
         _field[9] = pulong;
      }
@@ -44,6 +45,26 @@ public class PacketUserInfo : Packet
         pfloat.f = 105;
         plong.n = 106;
         pulong.n = 107;
+    }
 
+    public override string ToString()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.Append(base.ToString());
+
+        sb.Append(string.Format("Name : {0}, Age : {1}, pbyte : {2}, psbyte : {3}, pshort : {4}, pinteger : {5}, puinteger : {6}, pfloat : {7}, plong : {8} pulong : {9}",
+            name,
+            age,
+            pbyte,
+            psbyte,
+            pshort,
+            pinteger,
+            puinteger,
+            pfloat,
+            plong,
+            pulong
+            ));
+
+        return sb.ToString();
     }
 }
