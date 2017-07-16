@@ -5,6 +5,7 @@ using System.Text;
 using System.Net;
 using System.Net.Sockets;
 using UnityEngine;
+using NetworkLibrary;
 
 public class ChatController : MonoBehaviour
 {
@@ -32,6 +33,11 @@ public class ChatController : MonoBehaviour
         string msg = tokens[1];
 
         _view.AppendText(ip, msg);
+    }
+
+    private void TestPacket()
+    {
+        Packet packet = new Packet(10, 100, 100);
     }
 
 }
