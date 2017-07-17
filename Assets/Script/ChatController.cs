@@ -21,7 +21,7 @@ public class ChatController : MonoBehaviour
 
     public void Start()
     {
-        TestPacket();
+        //TestPacket();
     }
 
     public void ReceiveCallBack(byte[] buff)
@@ -42,19 +42,14 @@ public class ChatController : MonoBehaviour
 
     private void TestPacket()
     {
-        PacketUserInfo sendPacket = new PacketUserInfo(1000, 1001);
+        PacketUserInfo sendPacket = new PacketUserInfo(1000);
         sendPacket.InitPacketUserInfo();
 
         Debug.Log(sendPacket.ToString());
         byte[] buff = sendPacket.ToBytes();
 
-        //packet.ToBytes();
-        //Debug.Log(packet.GetSize());
-        //PrintByteArray(buff);
-
-        PacketUserInfo receivePacket = new PacketUserInfo(1000, 1001);
+        PacketUserInfo receivePacket = new PacketUserInfo(1000);
         receivePacket.ToType(buff);
-
         Debug.Log(receivePacket.ToString());
     }
 
@@ -67,6 +62,5 @@ public class ChatController : MonoBehaviour
         }
         Debug.Log(sb.ToString());
     }
-
 
 }

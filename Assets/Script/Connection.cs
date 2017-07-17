@@ -52,6 +52,7 @@ public class Connection
 
     public void OnSendData(string message)
     {
+        Debug.Log("OnSendData");
         //@TODO: 연결 되도 false를 리턴한다
         //if (!_mainSock.IsBound)
         //{
@@ -59,23 +60,35 @@ public class Connection
         //    return;
         //}
 
-        if (string.IsNullOrEmpty(message))
-        {
-            Debug.Log("메세지가 입력 되지 않았습니다.");
-            return;
-        }
+        //if (string.IsNullOrEmpty(message))
+        //{
+        //    Debug.Log("메세지가 입력 되지 않았습니다.");
+        //    return;
+        //}
 
-        IPEndPoint ip = (IPEndPoint)_mainSock.LocalEndPoint;
-        string addr = ip.Address.ToString();
+        //IPEndPoint ip = (IPEndPoint)_mainSock.LocalEndPoint;
+        //string addr = ip.Address.ToString();
 
-        byte[] bDts = Encoding.UTF8.GetBytes(addr + "\x01" + message);
+        //byte[] bDts = Encoding.UTF8.GetBytes(addr + "\x01" + message);
 
-        _mainSock.Send(bDts);
+        PacketUserInfo sendPacket = new PacketUserInfo(1000);
+        //sendPacket.TotalSize = new NetworkLibrary.PacketType.PShort((byte)sendPacket.GetSize());
 
-        if(SendUpdate != null)
-        {
-            SendUpdate(bDts);
-        }
+     
+        sendPacket.InitPacketUserInfo();
+
+        byte[] buff = sendPacket.ToBytes();
+
+        Debug.Log(buff.Length);
+        Debug.Log(sendPacket.ToString());
+        Debug.Log(sendPacket.GetSize());
+
+        _mainSock.Send(buff);
+
+        //if(SendUpdate != null)
+        //{
+        //    SendUpdate(buff);
+        //}
     }
 
     public void DataReceived(System.IAsyncResult ar)
