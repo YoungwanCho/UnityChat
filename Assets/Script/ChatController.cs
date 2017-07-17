@@ -31,13 +31,18 @@ public class ChatController : MonoBehaviour
 
     public void SendUpdate(byte[] buff)
     {
-        string text = Encoding.UTF8.GetString(buff);
+        //string text = Encoding.UTF8.GetString(buff);
 
-        string[] tokens = text.Split('\x01');
-        string ip = tokens[0];
-        string msg = tokens[1];
+        //string[] tokens = text.Split('\x01');
+        //string ip = tokens[0];
+        //string msg = tokens[1];
 
-        _view.AppendText(ip, msg);
+
+        PacketUserInfo userInfo = new PacketUserInfo(1000);
+        userInfo.ToType(buff);
+
+
+        _view.AppendText("서버로부터 받음", userInfo.ToString());
     }
 
     private void TestPacket()

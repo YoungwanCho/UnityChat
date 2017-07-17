@@ -72,23 +72,14 @@ public class Connection
         //byte[] bDts = Encoding.UTF8.GetBytes(addr + "\x01" + message);
 
         PacketUserInfo sendPacket = new PacketUserInfo(1000);
-        //sendPacket.TotalSize = new NetworkLibrary.PacketType.PShort((byte)sendPacket.GetSize());
-
-     
         sendPacket.InitPacketUserInfo();
-
         byte[] buff = sendPacket.ToBytes();
-
-        Debug.Log(buff.Length);
-        Debug.Log(sendPacket.ToString());
-        Debug.Log(sendPacket.GetSize());
-
         _mainSock.Send(buff);
 
-        //if(SendUpdate != null)
-        //{
-        //    SendUpdate(buff);
-        //}
+        if (SendUpdate != null)
+        {
+            //SendUpdate(buff);
+        }
     }
 
     public void DataReceived(System.IAsyncResult ar)
