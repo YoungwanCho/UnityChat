@@ -1,7 +1,8 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using UnityEngine;
+
 
 public class ChatWindow : MonoBehaviour
 {
@@ -17,6 +18,8 @@ public class ChatWindow : MonoBehaviour
     {
         this.OnConnectToServer = onConnectToServer;
         this.OnSendData = onSendData;
+        _textIpAddress = GetDefaultIPAdress();
+        _textPort = "15000"; 
     }
 
     public void OnGUI()
@@ -48,6 +51,29 @@ public class ChatWindow : MonoBehaviour
         StringBuilder sb = new StringBuilder(_textHistroy);
         sb.Append(string.Format("{0} : {1}{2}", ip, message, System.Environment.NewLine));
         _textHistroy = sb.ToString();
+    }
+
+    private string GetDefaultIPAdress()
+    {
+        IPHostEntry he = Dns.GetHostEntry(Dns.GetHostName());
+
+        // 처음으로 발견되는 ipv4 주소를 사용한다.
+        IPAddress defaultHostAddress = null;
+        foreach (IPAddress addr in he.AddressList)
+        {
+            if (addr.AddressFamily == AddressFamily.InterNetwork)
+            {
+                defaultHostAddress = addr;
+                break;
+            }
+        }
+
+        // 주소가 없다면..
+        if (defaultHostAddress == null)
+            // 로컬호스트 주소를 사용한다.
+            defaultHostAddress = IPAddress.Loopback;
+
+        return defaultHostAddress.ToString();
     }
 
 }
