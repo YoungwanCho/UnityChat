@@ -2,6 +2,7 @@
 using System.Net.Sockets;
 using System.Text;
 using UnityEngine;
+using System.Collections;
 
 
 public class ChatWindow : MonoBehaviour
@@ -41,8 +42,19 @@ public class ChatWindow : MonoBehaviour
         if (GUI.Button(new Rect(440, 610, 100, 40), "전송"))
         {
             Debug.Log("Click Connect");
-            OnSendData(_textMessage);
+            //OnSendData(_textMessage);
+
+            OnSendData("");
             _textMessage = string.Empty;
+        }
+    }
+
+    IEnumerator Test()
+    {
+        for(;;)
+        {
+            OnSendData("");
+            yield return null;
         }
     }
 
@@ -50,7 +62,7 @@ public class ChatWindow : MonoBehaviour
     {
         StringBuilder sb = new StringBuilder(_textHistroy);
         sb.Append(string.Format("{0} : {1}{2}", ip, message, System.Environment.NewLine));
-        _textHistroy = sb.ToString();
+        _textHistroy = message; //sb.ToString();
     }
 
     private string GetDefaultIPAdress()
