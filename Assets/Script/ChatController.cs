@@ -24,25 +24,18 @@ public class ChatController : MonoBehaviour
         //TestPacket();
     }
 
-    public void ReceiveCallBack(byte[] buff)
+    public void ReceiveCallBack(Packet packet)
     {
-        SendUpdate(buff);
+
+        //PacketUserInfo userInfo = new PacketUserInfo((int)PacketType.USER_INFO);
+        ////userInfo.ToType(buff);
+
+        SendUpdate(packet.ToString());
     }
 
-    public void SendUpdate(byte[] buff)
+    public void SendUpdate(string msg)
     {
-        //string text = Encoding.UTF8.GetString(buff);
-
-        //string[] tokens = text.Split('\x01');
-        //string ip = tokens[0];
-        //string msg = tokens[1];
-
-
-        PacketUserInfo userInfo = new PacketUserInfo((int)PacketType.USER_INFO);
-        userInfo.ToType(buff);
-
-
-        _view.AppendText("서버로부터 받음", userInfo.ToString());
+        _view.AppendText("서버로부터 받음", msg);
     }
 
     private void TestPacket()

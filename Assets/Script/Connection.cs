@@ -11,8 +11,8 @@ public class Connection
 {
     private Socket _mainSock;
 
-    private Action<byte[]> ReceiveCallBack;
-    private Action<byte[]> SendUpdate;
+    private Action<Packet> ReceiveCallBack;
+    private Action<string> SendUpdate;
 
     private int _receiveSize = 0;
     private int _packetSize = 0;
@@ -20,7 +20,9 @@ public class Connection
     private List<byte> _byteList = new List<byte>();
     private Queue<NetworkLibrary.Packet> _packetQueue = new Queue<NetworkLibrary.Packet>();
 
-    public Connection(AddressFamily family, SocketType type, ProtocolType proto, Action<Byte[]> receiveCallBack, Action<Byte[]> sendUpdate)
+    private UInt32 testIndex = 0;
+
+    public Connection(AddressFamily family, SocketType type, ProtocolType proto, Action<Packet> receiveCallBack, Action<string> sendUpdate)
     {
         _mainSock = new Socket(family, type, proto);
         this.ReceiveCallBack = receiveCallBack;
@@ -60,9 +62,24 @@ public class Connection
     public void OnSendData(string message)
     {
         Debug.Log("OnSendData");
-        PacketUserInfo sendPacket = new PacketUserInfo((int)PacketType.USER_INFO);
-        sendPacket.InitPacketUserInfo();
-        byte[] buff = sendPacket.ToBytes();
+        if (testIndex >= UInt32.MaxValue)
+        {
+            testIndex = 0;
+        }
+        testIndex = 1;
+        byte[] buff = null;
+        if (testIndex % 2 == 0)
+        {
+            PacketRoundInfo sendPacket = new PacketRoundInfo((int)PacketType.ROUND_INFO);
+            buff = sendPacket.ToBytes();
+            sendPacket.InitPacketRoundInfo();
+        }
+        else
+        {
+            PacketUserInfo sendPacket = new PacketUserInfo((int)PacketType.USER_INFO);
+            buff = sendPacket.ToBytes();
+            sendPacket.InitPacketUserInfo();
+        }
         _mainSock.Send(buff);
 
         if (SendUpdate != null)
@@ -131,6 +148,12 @@ public class Connection
                 userInfo.ToType(packetByte);
                 _packetQueue.Enqueue(userInfo);
             }
+            else if(packetType == (int)PacketType.ROUND_INFO)
+            {
+                PacketRoundInfo roundInfo = new PacketRoundInfo(packetType);
+                roundInfo.ToType(packetByte);
+                _packetQueue.Enqueue(roundInfo);
+            }
             _packetSize = 0;
         }
         ProcessPacket();
@@ -144,7 +167,6 @@ public class Connection
         }
 
         Packet packet = _packetQueue.Dequeue();
-
         AsyncObject obj = new AsyncObject(1024);
 
         if (packet.PacketType.n == (int)PacketType.USER_INFO)
@@ -153,7 +175,15 @@ public class Connection
 
             if (userInfo != null)
             {
-                ReceiveCallBack(userInfo.ToBytes());
+                ReceiveCallBack(userInfo);
+            }
+        }
+        else if(packet.PacketType.n == (int)PacketType.ROUND_INFO)
+        {
+            PacketRoundInfo roundInfo = packet as PacketRoundInfo;
+            if(roundInfo != null)
+            {
+                ReceiveCallBack(roundInfo);
             }
         }
     }
