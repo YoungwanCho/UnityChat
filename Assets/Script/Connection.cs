@@ -66,21 +66,21 @@ public class Connection
         {
             testIndex = 0;
         }
-        testIndex = 1;
         byte[] buff = null;
         if (testIndex % 2 == 0)
         {
             PacketRoundInfo sendPacket = new PacketRoundInfo((int)PacketType.ROUND_INFO);
-            buff = sendPacket.ToBytes();
             sendPacket.InitPacketRoundInfo();
+            buff = sendPacket.ToBytes();
         }
         else
         {
             PacketUserInfo sendPacket = new PacketUserInfo((int)PacketType.USER_INFO);
-            buff = sendPacket.ToBytes();
             sendPacket.InitPacketUserInfo();
+            buff = sendPacket.ToBytes();
         }
         _mainSock.Send(buff);
+        testIndex++;
 
         if (SendUpdate != null)
         {
