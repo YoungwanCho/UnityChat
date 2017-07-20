@@ -38,7 +38,7 @@ public class ChatController : MonoBehaviour
         //string msg = tokens[1];
 
 
-        PacketUserInfo userInfo = new PacketUserInfo(1000);
+        PacketUserInfo userInfo = new PacketUserInfo((int)PacketType.USER_INFO);
         userInfo.ToType(buff);
 
 
@@ -47,13 +47,13 @@ public class ChatController : MonoBehaviour
 
     private void TestPacket()
     {
-        PacketUserInfo sendPacket = new PacketUserInfo(1000);
+        PacketUserInfo sendPacket = new PacketUserInfo((int)PacketType.USER_INFO);
         sendPacket.InitPacketUserInfo();
 
         Debug.Log(sendPacket.ToString());
         byte[] buff = sendPacket.ToBytes();
 
-        PacketUserInfo receivePacket = new PacketUserInfo(1000);
+        PacketUserInfo receivePacket = new PacketUserInfo((int)PacketType.USER_INFO);
         receivePacket.ToType(buff);
         Debug.Log(receivePacket.ToString());
     }

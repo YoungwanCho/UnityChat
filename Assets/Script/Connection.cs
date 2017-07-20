@@ -60,7 +60,7 @@ public class Connection
     public void OnSendData(string message)
     {
         Debug.Log("OnSendData");
-        PacketUserInfo sendPacket = new PacketUserInfo(1000);
+        PacketUserInfo sendPacket = new PacketUserInfo((int)PacketType.USER_INFO);
         sendPacket.InitPacketUserInfo();
         byte[] buff = sendPacket.ToBytes();
         _mainSock.Send(buff);
@@ -125,7 +125,7 @@ public class Connection
             _byteList.RemoveRange(0, _packetSize);
             int packetType = Util.ByteArrToInt(packetByte, 2);
 
-            if (packetType == 1000)
+            if (packetType == (int)PacketType.USER_INFO)
             {
                 PacketUserInfo userInfo = new PacketUserInfo(packetType);
                 userInfo.ToType(packetByte);
@@ -147,7 +147,7 @@ public class Connection
 
         AsyncObject obj = new AsyncObject(1024);
 
-        if (packet.PacketType.n == 1000)
+        if (packet.PacketType.n == (int)PacketType.USER_INFO)
         {
             PacketUserInfo userInfo = packet as PacketUserInfo;
 
