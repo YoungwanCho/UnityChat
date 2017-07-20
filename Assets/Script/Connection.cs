@@ -5,6 +5,7 @@ using System.Text;
 using System.Net;
 using System.Net.Sockets;
 using UnityEngine;
+using NetworkLibrary;
 
 public class Connection
 {
@@ -12,6 +13,12 @@ public class Connection
 
     private Action<byte[]> ReceiveCallBack;
     private Action<byte[]> SendUpdate;
+
+    private int _receiveSize = 0;
+    private int _packetSize = 0;
+
+    private List<byte> _byteList = new List<byte>();
+    private Queue<NetworkLibrary.Packet> _packetQueue = new Queue<NetworkLibrary.Packet>();
 
     public Connection(AddressFamily family, SocketType type, ProtocolType proto, Action<Byte[]> receiveCallBack, Action<Byte[]> sendUpdate)
     {
@@ -45,32 +52,14 @@ public class Connection
             return;
         }
 
-        NetworkLibrary.AsyncObject obj = new NetworkLibrary.AsyncObject(4096);
+        AsyncObject obj = new AsyncObject(1024);
         obj.WorkingSocket = _mainSock;
-        _mainSock.BeginReceive(obj.Buffer, 0, obj.BufferSize, 0, DataReceived, obj);
+        _mainSock.BeginReceive(obj.Buffer, 0, obj.BufferSize, 0, StreamReceive, obj);
     }
 
     public void OnSendData(string message)
     {
         Debug.Log("OnSendData");
-        //@TODO: 연결 되도 false를 리턴한다
-        //if (!_mainSock.IsBound)
-        //{
-        //    Debug.Log("서버가 실행되고 있지 않습니다.");
-        //    return;
-        //}
-
-        //if (string.IsNullOrEmpty(message))
-        //{
-        //    Debug.Log("메세지가 입력 되지 않았습니다.");
-        //    return;
-        //}
-
-        //IPEndPoint ip = (IPEndPoint)_mainSock.LocalEndPoint;
-        //string addr = ip.Address.ToString();
-
-        //byte[] bDts = Encoding.UTF8.GetBytes(addr + "\x01" + message);
-
         PacketUserInfo sendPacket = new PacketUserInfo(1000);
         sendPacket.InitPacketUserInfo();
         byte[] buff = sendPacket.ToBytes();
@@ -82,22 +71,112 @@ public class Connection
         }
     }
 
-    public void DataReceived(System.IAsyncResult ar)
+    private void StreamReceive(IAsyncResult ar)
     {
-        NetworkLibrary.AsyncObject obj = (NetworkLibrary.AsyncObject)ar.AsyncState;
+        AsyncObject obj = (AsyncObject)ar.AsyncState;
 
-        int received = obj.WorkingSocket.EndReceive(ar);
-
-        if (received <= 0)
+        try
         {
-            obj.WorkingSocket.Close();
+            int len = obj.WorkingSocket.EndReceive(ar);
+
+            for (int i = 0; i < len; i++)
+            {
+                _byteList.Add(obj.Buffer[i]);
+            }
+            obj.ClearBuffer();
+            obj.WorkingSocket.BeginReceive(obj.Buffer, 0, obj.BufferSize, 0, StreamReceive, obj);
+        }
+        catch (Exception ex)
+        {
+
+        }
+
+        ProcessStreamByte();
+    }
+
+    private void ProcessStreamByte()
+    {
+        if (_byteList.Count < 2) // 패킷사이즈도 알아 낼수 없는 경우
+        {
             return;
         }
 
-        ReceiveCallBack(obj.Buffer);
+        if (_packetSize == 0)
+        {
+            byte[] sizeByte = new byte[2];
+            sizeByte[0] = _byteList[0];
+            sizeByte[1] = _byteList[1];
+            _packetSize = Util.ByteArrToShort(sizeByte, 0);
+        }
 
-        obj.ClearBuffer();
+        if (_byteList.Count < _packetSize) // 필요한 만큼 다 못 받은 경우
+        {
+            return;
+        }
+        else
+        {
+            byte[] packetByte = new byte[_packetSize];
 
-        obj.WorkingSocket.BeginReceive(obj.Buffer, 0, 4096, 0, DataReceived, obj);
+            for (int i = 0; i < _packetSize; i++)
+            {
+                packetByte[i] = _byteList[i];
+            }
+
+            _byteList.RemoveRange(0, _packetSize);
+            int packetType = Util.ByteArrToInt(packetByte, 2);
+
+            if (packetType == 1000)
+            {
+                PacketUserInfo userInfo = new PacketUserInfo(packetType);
+                userInfo.ToType(packetByte);
+                _packetQueue.Enqueue(userInfo);
+            }
+            _packetSize = 0;
+        }
+        ProcessPacket();
+    }
+
+    private void ProcessPacket()
+    {
+        if (_packetQueue.Count <= 0)
+        {
+            return;
+        }
+
+        Packet packet = _packetQueue.Dequeue();
+
+        AsyncObject obj = new AsyncObject(1024);
+
+        if (packet.PacketType.n == 1000)
+        {
+            PacketUserInfo userInfo = packet as PacketUserInfo;
+
+            if (userInfo != null)
+            {
+                ReceiveCallBack(userInfo.ToBytes());
+            }
+        }
+    }
+
+    public void DataReceived(System.IAsyncResult ar)
+    {
+
+
+        
+        //NetworkLibrary.AsyncObject obj = (NetworkLibrary.AsyncObject)ar.AsyncState;
+
+        //int received = obj.WorkingSocket.EndReceive(ar);
+
+        //if (received <= 0)
+        //{
+        //    obj.WorkingSocket.Close();
+        //    return;
+        //}
+
+        //ReceiveCallBack(obj.Buffer);
+
+        //obj.ClearBuffer();
+
+        //obj.WorkingSocket.BeginReceive(obj.Buffer, 0, 1024, 0, DataReceived, obj);
     }
 }

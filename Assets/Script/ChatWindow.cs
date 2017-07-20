@@ -44,7 +44,8 @@ public class ChatWindow : MonoBehaviour
             Debug.Log("Click Connect");
             //OnSendData(_textMessage);
 
-            OnSendData("");
+            //OnSendData("");
+            StartCoroutine("Test");
             _textMessage = string.Empty;
         }
     }
