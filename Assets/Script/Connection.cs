@@ -20,6 +20,7 @@ public class Connection
     private List<byte> _byteList = new List<byte>();
     private Queue<NetworkLibrary.Packet> _packetQueue = new Queue<NetworkLibrary.Packet>();
 
+    private object _lock = new object();
     private UInt32 testIndex = 0;
 
     public Connection(AddressFamily family, SocketType type, ProtocolType proto, Action<Packet> receiveCallBack, Action<string> sendUpdate)
@@ -81,7 +82,7 @@ public class Connection
         }
         _mainSock.Send(buff);
         testIndex++;
-
+        
         if (SendUpdate != null)
         {
             //SendUpdate(buff);
@@ -90,25 +91,28 @@ public class Connection
 
     private void StreamReceive(IAsyncResult ar)
     {
-        AsyncObject obj = (AsyncObject)ar.AsyncState;
-
-        try
+        lock (_lock)
         {
-            int len = obj.WorkingSocket.EndReceive(ar);
+            AsyncObject obj = (AsyncObject)ar.AsyncState;
 
-            for (int i = 0; i < len; i++)
+            try
             {
-                _byteList.Add(obj.Buffer[i]);
+                int len = obj.WorkingSocket.EndReceive(ar);
+
+                for (int i = 0; i < len; i++)
+                {
+                    _byteList.Add(obj.Buffer[i]);
+                }
+                obj.ClearBuffer();
+                obj.WorkingSocket.BeginReceive(obj.Buffer, 0, obj.BufferSize, 0, StreamReceive, obj);
             }
-            obj.ClearBuffer();
-            obj.WorkingSocket.BeginReceive(obj.Buffer, 0, obj.BufferSize, 0, StreamReceive, obj);
-        }
-        catch (Exception ex)
-        {
+            catch (Exception ex)
+            {
 
-        }
+            }
 
-        ProcessStreamByte();
+            ProcessStreamByte();
+        }
     }
 
     private void ProcessStreamByte()
@@ -188,25 +192,4 @@ public class Connection
         }
     }
 
-    public void DataReceived(System.IAsyncResult ar)
-    {
-
-
-        
-        //NetworkLibrary.AsyncObject obj = (NetworkLibrary.AsyncObject)ar.AsyncState;
-
-        //int received = obj.WorkingSocket.EndReceive(ar);
-
-        //if (received <= 0)
-        //{
-        //    obj.WorkingSocket.Close();
-        //    return;
-        //}
-
-        //ReceiveCallBack(obj.Buffer);
-
-        //obj.ClearBuffer();
-
-        //obj.WorkingSocket.BeginReceive(obj.Buffer, 0, 1024, 0, DataReceived, obj);
-    }
 }
