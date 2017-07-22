@@ -14,7 +14,6 @@ public class Connection
     private Action<Packet> ReceiveCallBack;
     private Action<string> SendUpdate;
 
-    private int _receiveSize = 0;
     private int _packetSize = 0;
 
     private List<byte> _byteList = new List<byte>();
@@ -171,7 +170,6 @@ public class Connection
         }
 
         Packet packet = _packetQueue.Dequeue();
-        AsyncObject obj = new AsyncObject(1024);
 
         if (packet.PacketType.n == (int)PacketType.USER_INFO)
         {
